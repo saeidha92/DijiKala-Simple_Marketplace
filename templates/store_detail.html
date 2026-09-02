@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ store.name }}{% endblock %}
+
+{% block content %}
+    <h1>{{ store.name }}</h1>
+    <p class="muted">Owned by {{ store.owner.user.username }}</p>
+    <p>{{ store.description }}</p>
+    {% if can_manage %}
+        <p class="muted"><strong>Store balance:</strong> ${{ store.balance }}</p>
+    {% endif %}
+
+    {% if can_manage %}
+        <a class="btn" href="{% url 'market:add_product' store.id %}">+ Add Product</a>
+    {% endif %}
+
+    <div class="product-grid">
+        {% for product in products %}
+            <div class="card">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                    <div class="product-image placeholder">No image</div>
+                {% endif %}
+                <h3>{{ product.name }}</h3>
+                <p class="price">${{ product.price }}</p>
+                <p class="muted">Stock: {{ product.stock }}</p>
+                {% if user.is_authenticated and user.customer_profile %}
+                    <a class="btn" href="{% url 'market:add_to_cart' product.id %}">Add to cart</a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>This store has no products yet.</p>
+        {% endfor %}
+    </div>
+{% endblock %}
