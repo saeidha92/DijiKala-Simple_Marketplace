@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}My Account{% endblock %}
+
+{% block content %}
+    <h1>My Account</h1>
+    <div class="card info-card">
+        <p><strong>Name:</strong> {{ profile.user.username }}</p>
+        <p><strong>Phone:</strong> {{ profile.phone|default:"-" }}</p>
+        <p><strong>Customer ID:</strong> {{ profile.id }}</p>
+        <p><strong>Balance:</strong> ${{ profile.balance }}</p>
+    </div>
+
+    <div class="action-links">
+        <a class="btn" href="{% url 'market:payment' %}">💳 Increase balance</a>
+        <a class="btn" href="{% url 'market:cart' %}">🛒 View cart</a>
+        <a class="btn" href="{% url 'market:order_history' %}">📜 Order history</a>
+    </div>
+{% endblock %}

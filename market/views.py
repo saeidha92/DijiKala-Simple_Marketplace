@@ -141,3 +141,33 @@ def add_product_view(request, store_id):
         form = ProductForm()
     return render(request, "product_form.html", {"form": form, "store": store})
 
+
+# Customer area
+# ---------------------------------------------------------------------------
+
+@login_required
+def customer_panel_view(request):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers can access the customer panel.")
+        return redirect("market:home")
+    profile = request.user.customer_profile
+    return render(request, "customer_panel.html", {"profile": profile})
+
+@login_required
+def payment_view(request):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers can add balance.")
+        return redirect("market:home")
+    profile = request.user.customer_profile
+    if request.method == "POST":
+        form = AddBalanceForm(request.POST)
+        if form.is_valid():
+            profile.balance += form.cleaned_data["amount"]
+            profile.save()
+            messages.success(request, f'{form.cleaned_data["amount"]} was added to your balance.')
+            return redirect("market:customer_panel")
+    else:
+        form = AddBalanceForm()
+    return render(request, "payment.html", {"form": form, "profile": profile})
+
+
