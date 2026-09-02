@@ -92,3 +92,52 @@ def store_detail_view(request, pk):
         "store_detail.html",
         {"store": store, "products": products, "can_manage": can_manage},
     )
+
+# Seller area
+# ---------------------------------------------------------------------------
+
+@login_required
+def seller_panel_view(request):
+    if not is_seller(request.user):
+        messages.error(request, "Only sellers can access the seller panel.")
+        return redirect("market:home")
+    stores = request.user.seller_profile.stores.all()
+    return render(request, "seller_panel.html", {"stores": stores})
+
+
+@login_required
+def create_store_view(request):
+    if not is_seller(request.user):
+        messages.error(request, "Only sellers can create stores.")
+        return redirect("market:home")
+    if request.method == "POST":
+        form = StoreForm(request.POST)
+        if form.is_valid():
+            store = form.save(commit=False)
+            store.owner = request.user.seller_profile
+            store.save()
+            messages.success(request, f'Store "{store.name}" was created.')
+            return redirect("market:seller_panel")
+    else:
+        form = StoreForm()
+    return render(request, "store_form.html", {"form": form})
+
+
+@login_required
+def add_product_view(request, store_id):
+    store = get_object_or_404(Store, pk=store_id)
+    if not is_seller(request.user) or store.owner.user != request.user:
+        messages.error(request, "You do not have permission to manage this store.")
+        return redirect("market:store_detail", pk=store.pk)
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.store = store
+            product.save()
+            messages.success(request, f'Product "{product.name}" was added.')
+            return redirect("market:store_detail", pk=store.pk)
+    else:
+        form = ProductForm()
+    return render(request, "product_form.html", {"form": form, "store": store})
+
