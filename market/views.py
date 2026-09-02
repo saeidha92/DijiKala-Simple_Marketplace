@@ -30,3 +30,24 @@ def is_seller(user):
 def is_customer(user):
     return hasattr(user, "customer_profile")
 
+# Auth
+# ---------------------------------------------------------------------------
+
+def signup_view(request):
+    if request.method == "POST":
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            role = form.cleaned_data["role"]
+            if role == "seller":
+                SellerProfile.objects.create(user=user)
+            else:
+                CustomerProfile.objects.create(
+                    user=user, phone=form.cleaned_data.get("phone", "")
+                )
+            login(request, user)
+            messages.success(request, "Welcome to DijiKala! Your account was created.")
+            return redirect("market:home")
+    else:
+        form = SignUpForm()
+    return render(request, "registration/signup.html", {"form": form})
