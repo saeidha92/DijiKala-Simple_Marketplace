@@ -1,0 +1,50 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DijiKala{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <a class="logo" href="{% url 'market:home' %}">DijiKala</a>
+        <div class="nav-links">
+            <a href="{% url 'market:stores' %}">All Stores</a>
+            {% if user.is_authenticated %}
+                {% if user.customer_profile %}
+                    <a href="{% url 'market:cart' %}">🛒 Cart</a>
+                    <a href="{% url 'market:customer_panel' %}">{{ user.username }}</a>
+                {% elif user.seller_profile %}
+                    <a href="{% url 'market:create_store' %}">+ Create Store</a>
+                    <a href="{% url 'market:seller_panel' %}">{{ user.username }} (Seller)</a>
+                {% endif %}
+                <form action="{% url 'logout' %}" method="post" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="link-button">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                <a href="{% url 'market:signup' %}">Sign up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>DijiKala Simple Marketplace &mdash; student demo project</p>
+    </footer>
+</body>
+</html>
