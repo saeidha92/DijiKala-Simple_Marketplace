@@ -252,6 +252,16 @@ def checkout_view(request):
     return render(request, "thank_you.html", {"order": order})
 
 
+# -----------------------------------------
+
+@login_required
+def order_history_view(request):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers have an order history.")
+        return redirect("market:home")
+    orders = request.user.customer_profile.orders.prefetch_related("items")
+    return render(request, "order_history.html", {"orders": orders})
+
 
 
 
