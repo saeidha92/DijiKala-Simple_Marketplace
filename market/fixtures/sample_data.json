@@ -1,0 +1,62 @@
+[
+{
+  "model": "market.sellerprofile",
+  "pk": 1,
+  "fields": {
+    "user": 2
+  }
+},
+{
+  "model": "market.customerprofile",
+  "pk": 1,
+  "fields": {
+    "user": 3,
+    "phone": "",
+    "balance": "30.01"
+  }
+},
+{
+  "model": "market.store",
+  "pk": 1,
+  "fields": {
+    "name": "Tech Saeid",
+    "owner": 1,
+    "description": "Your one-stop shop for the latest gadgets, electronics, and accessories.",
+    "balance": "19.99",
+    "created_at": "2026-09-04T01:49:53.779Z"
+  }
+},
+{
+  "model": "market.product",
+  "pk": 1,
+  "fields": {
+    "name": "Wireless Mouse",
+    "price": "19.99",
+    "description": "empty",
+    "image": "",
+    "store": 1,
+    "category": null,
+    "created_at": "2026-09-04T01:52:13.811Z",
+    "stock": 14
+  }
+},
+{
+  "model": "market.order",
+  "pk": 1,
+  "fields": {
+    "customer": 1,
+    "total_amount": "19.99",
+    "date": "2026-09-04T01:57:44.149Z"
+  }
+},
+{
+  "model": "market.orderitem",
+  "pk": 1,
+  "fields": {
+    "order": 1,
+    "product": 1,
+    "quantity": 1,
+    "price": "19.99"
+  }
+}
+]
