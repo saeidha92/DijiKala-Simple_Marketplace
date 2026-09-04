@@ -170,4 +170,88 @@ def payment_view(request):
         form = AddBalanceForm()
     return render(request, "payment.html", {"form": form, "profile": profile})
 
+# Cart
+# ---------------------------------------------------------------------------
+
+
+@login_required
+def add_to_cart_view(request, product_id):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers can use the cart.")
+        return redirect("market:home")
+    product = get_object_or_404(Product, pk=product_id)
+    item, created = CartItem.objects.get_or_create(
+        product=product, customer=request.user.customer_profile
+    )
+    if not created:
+        item.quantity += 1
+        item.save()
+    messages.success(request, f'"{product.name}" was added to your cart.')
+    return redirect(request.META.get("HTTP_REFERER", "market:home"))
+
+
+@login_required
+def remove_from_cart_view(request, item_id):
+    item = get_object_or_404(CartItem, pk=item_id, customer=request.user.customer_profile)
+    item.delete()
+    messages.info(request, "Item removed from cart.")
+    return redirect("market:cart")
+
+
+@login_required
+def cart_view(request):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers can use the cart.")
+        return redirect("market:home")
+    profile = request.user.customer_profile
+    items = profile.cart_items.select_related("product", "product__store")
+    total = sum((item.total_price() for item in items), Decimal("0"))
+    return render(request, "cart.html", {"items": items, "total": total})
+
+
+@login_required
+@transaction.atomic
+def checkout_view(request):
+    if not is_customer(request.user):
+        messages.error(request, "Only customers can checkout.")
+        return redirect("market:home")
+    profile = request.user.customer_profile
+    items = list(profile.cart_items.select_related("product", "product__store__owner"))
+
+    if not items:
+        messages.warning(request, "Your cart is empty.")
+        return redirect("market:cart")
+
+    total = sum((item.total_price() for item in items), Decimal("0"))
+    if profile.balance < total:
+        messages.error(request, "Not enough balance. Please add funds first.")
+        return redirect("market:payment")
+
+    order = Order.objects.create(customer=profile, total_amount=total)
+    for item in items:
+        OrderItem.objects.create(
+            order=order,
+            product=item.product,
+            quantity=item.quantity,
+            price=item.product.price,
+        )
+        # Demo logic: money "moves" from the customer to the seller's store.
+        item.product.stock = max(item.product.stock - item.quantity, 0)
+        item.product.save()
+
+        store = item.product.store
+        store.balance += item.total_price()
+        store.save()
+
+    profile.balance -= total
+    profile.save()
+    item_ids = [item.id for item in items]
+    CartItem.objects.filter(id__in=item_ids).delete()
+
+    messages.success(request, "Checkout complete! Thank you for your order.")
+    return render(request, "thank_you.html", {"order": order})
+
+
+
+
 

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Thank You{% endblock %}
+
+{% block content %}
+    <div class="thank-you">
+        <h1>🎉 Thank you for your order!</h1>
+        <p>Order #{{ order.id }} was placed successfully.</p>
+        <p class="total">Total paid: ${{ order.total_amount }}</p>
+        <a class="btn" href="{% url 'market:order_history' %}">View order history</a>
+        <a class="btn secondary" href="{% url 'market:home' %}">Continue shopping</a>
+    </div>
+{% endblock %}
